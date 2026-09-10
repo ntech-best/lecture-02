@@ -3,6 +3,8 @@ from main import app, history  # or whatever your app module is
 
 client = TestClient(app)
 
+#test post /calculate endpoint
+
 def test_basic_division():
     r = client.post("/calculate", params={"expr": "30/4"})
     assert r.status_code == 200
@@ -32,7 +34,7 @@ def test_invalid_expr_returns_ok_false():
     assert "error" in data and data["error"] != ""
 
 
-## History tests
+# test get /history endpoint
 
 def test_history_empty():
     history.clear()
@@ -70,12 +72,38 @@ def test_history_limit():
     assert data[0]["expr"] == "3+3"
     assert data[1]["expr"] == "2+2"
 
+# test delete /history endpoint
+
 def test_delete_history():
     history.clear()
 
     client.post("/calculate", params={"expr": "10+5"})
 
     r = client.delete("/history")
+    assert r.status_code == 200
+    assert r.json()["message"] == "History cleared"
+
+    r = client.get("/history")
+    assert r.status_code == 200
+    assert r.json() == []
+
+def test_delete_empty_history():
+    history.clear()
+
+    r = client.delete("/history")
+
+    assert r.status_code == 200
+    assert r.json()["message"] == "History cleared"
+
+def test_delete_all_history():
+    history.clear()
+
+    client.post("/calculate", params={"expr": "1+1"})
+    client.post("/calculate", params={"expr": "2+2"})
+    client.post("/calculate", params={"expr": "3+3"})
+
+    r = client.delete("/history")
+
     assert r.status_code == 200
     assert r.json()["message"] == "History cleared"
 
