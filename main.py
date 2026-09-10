@@ -29,16 +29,44 @@ def calculate(expr: str):
     try:
         code = expand_percent(expr)
         result = aeval(code)
+
         if aeval.error:
             msg = "; ".join(str(e.get_error()) for e in aeval.error)
             aeval.error.clear()
-            return {"ok": False, "expr": expr, "result": "", "error": msg}
-        # TODO: Add history
-        return {"ok": True, "expr": expr, "result": result, "error": ""}
+            return {
+                "ok": False,
+                "expr": expr,
+                "result": "",
+                "error": msg
+            }
+
+        history.append({
+            "expr": expr,
+            "result": result,
+            "timestamp": datetime.now().isoformat()
+        })
+
+        return {
+            "ok": True,
+            "expr": expr,
+            "result": result,
+            "error": ""
+        }
+
     except Exception as e:
-        return {"ok": False, "expr": expr, "error": str(e)}
+        return {
+            "ok": False,
+            "expr": expr,
+            "error": str(e)
+        }
 
-# TODO GET /hisory
 
-# TODO DELETE /history
+@app.get("/history")
+def get_history(limit: int = 10):
+    return list(history)[-limit:][::-1]
 
+
+@app.delete("/history")
+def clear_history():
+    history.clear()
+    return {"message": "History cleared"}
