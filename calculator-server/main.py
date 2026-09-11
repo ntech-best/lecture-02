@@ -1,14 +1,15 @@
 import math
 from collections import deque
 from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from asteval import Interpreter
 
-from calculator import expand_percent
+from models import Expression, CalculatorLog
+
 
 HISTORY_MAX = 1000
-# HISTORY (in-memory for now)
 history = deque(maxlen=HISTORY_MAX)
 
 app = FastAPI(title="Mini Calculator API")
@@ -20,19 +21,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- Safe evaluator ----------
-aeval = Interpreter(minimal=True, usersyms={"pi": math.pi, "e": math.e})
+aeval = Interpreter(
+    minimal=True,
+    usersyms={"pi": math.pi, "e": math.e}
+)
 
 
 @app.post("/calculate")
-def calculate(expr: str):
+def calculate(expression: Expression):
+    expr = expression.expr
+
     try:
-        code = expand_percent(expr)
+        code = expression.expand_percent()
         result = aeval(code)
 
         if aeval.error:
             msg = "; ".join(str(e.get_error()) for e in aeval.error)
             aeval.error.clear()
+
             return {
                 "ok": False,
                 "expr": expr,
@@ -61,9 +67,12 @@ def calculate(expr: str):
         }
 
 
-@app.get("/history")
+@app.get("/history", response_model=list[CalculatorLog])
 def get_history(limit: int = 10):
-    return list(history)[-limit:][::-1]
+    return [
+        CalculatorLog(**item)
+        for item in list(history)[-limit:][::-1]
+    ]
 
 
 @app.delete("/history")
