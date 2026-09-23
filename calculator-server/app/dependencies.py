@@ -1,6 +1,8 @@
 import re
 from collections import deque
 
+from fastapi import HTTPException
+
 from app.schemas import ExpressionIn
 
 
@@ -22,30 +24,35 @@ _number_percent = re.compile(r"(?P<n>\d+(?:\.\d+)?)%")
 
 
 def expand_percent(expression: ExpressionIn):
-    """Handle A op B% and standalone N% patterns."""
+    try:
+        s = expression.expr
 
-    s = expression.expr
+        while True:
+            m = _percent_pair.search(s)
 
-    while True:
-        m = _percent_pair.search(s)
+            if not m:
+                break
 
-        if not m:
-            break
+            a, op, b = m.group("a", "op", "b")
 
-        a, op, b = m.group("a", "op", "b")
+            if op in "+-":
+                repl = f"{a} {op} (({b}/100)*{a})"
+            elif op == "*":
+                repl = f"{a} * ({b}/100)"
+            else:
+                repl = f"{a} / ({b}/100)"
 
-        if op in "+-":
-            repl = f"{a} {op} (({b}/100)*{a})"
-        elif op == "*":
-            repl = f"{a} * ({b}/100)"
-        else:
-            repl = f"{a} / ({b}/100)"
+            s = s[:m.start()] + repl + s[m.end():]
 
-        s = s[:m.start()] + repl + s[m.end():]
+        s = _number_percent.sub(
+            lambda m: f"({m.group('n')}/100)",
+            s
+        )
 
-    s = _number_percent.sub(
-        lambda m: f"({m.group('n')}/100)",
-        s
-    )
+        return expression, s
 
-    return expression, s
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to expand expression: {e}"
+        )
