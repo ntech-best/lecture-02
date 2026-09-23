@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -13,13 +14,18 @@ _percent_pair = re.compile(r"""
 _number_percent = re.compile(r"(?P<n>\d+(?:\.\d+)?)%")
 
 
-class Expression(BaseModel):
+class BaseExpression(BaseModel):
     expr: str
 
+
+class ExpressionIn(BaseExpression):
+
     def expand_percent(self) -> str:
+        """Handle A op B% and standalone N% patterns."""
         s = self.expr
 
         while True:
+            # Replace A op B%
             m = _percent_pair.search(s)
 
             if not m:
@@ -36,6 +42,7 @@ class Expression(BaseModel):
 
             s = s[:m.start()] + repl + s[m.end():]
 
+        # Replace B%
         s = _number_percent.sub(
             lambda m: f"({m.group('n')}/100)",
             s
@@ -44,7 +51,6 @@ class Expression(BaseModel):
         return s
 
 
-class CalculatorLog(BaseModel):
-    timestamp: datetime
-    expr: str
-    result: float
+class ExpressionOut(BaseExpression):
+    result: Any
+    timestamp: str = datetime.now().isoformat() + "Z"
