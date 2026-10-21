@@ -1,0 +1,141 @@
+.calculator {
+  max-width: 370px;
+  margin: 36px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 36px;
+}
+
+.calculator h1 {
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+
+.screen {
+  background: #f1f1f1;
+  text-align: right;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+.expression {
+  min-height: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.result {
+  font-size: 32px;
+  min-height: 40px;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.key {
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.key.operator {
+  background: #e8e8e8;
+}
+
+.history {
+  margin-top: 22px;
+}
+
+.history li {
+  margin-bottom: 5px;
+}
+
+.clear-history {
+  cursor: pointer;
+  padding: 9px 12px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+}
+
+.error {
+  color: red;
+}
+
+/* Calculator theme */
+.calculator.light {
+  background: #ffffff;
+  color: #181818;
+}
+
+.calculator.dark {
+  background: #22252d;
+  color: #f5f5f5;
+}
+
+/* Display */
+.calculator.light .screen {
+  background: #f1f1f1;
+}
+
+.calculator.dark .screen {
+  background: #12151b;
+}
+
+.calculator.dark .expression {
+  color: #b8bdc9;
+}
+
+/* Buttons: classes supplied by Button's useContext */
+.button-light {
+  background: #f4f4f4;
+  color: #181818;
+  border: 1px solid #cccccc;
+}
+
+.button-dark {
+  background: #363b47;
+  color: #ffffff;
+  border: 1px solid #505766;
+}
+
+.key.operator.button-light {
+  background: #ff9500;
+  color: #181818;
+}
+
+.key.operator.button-dark {
+  background: #ff9500;
+  color: #181818;
+}
+
+.theme-toggle {
+  cursor: pointer;
+  padding: 9px 12px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.calculator.dark .error {
+  color: #ff9696;
+}
