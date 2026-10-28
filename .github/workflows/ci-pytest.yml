@@ -4,11 +4,31 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      database:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: classroom-root
+          MYSQL_DATABASE: appdb
+          MYSQL_USER: appuser
+          MYSQL_PASSWORD: classroom-app
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pclassroom-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+          --health-start-period=30s
+
+    env:
+      DATABASE_URL: mysql+mysqlconnector://appuser:classroom-app@127.0.0.1:3306/appdb
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
       - run: pip install -U pip
-      - run: pip install fastapi uvicorn[standard] asteval pytest httpx2
+      - run: pip install -r requirements.txt pytest httpx2
       - run: pytest -q
